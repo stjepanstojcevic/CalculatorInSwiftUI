@@ -61,14 +61,16 @@ struct ContentView: View {
         [.zero,.decimal,.equal]]
     var body: some View {
         ZStack {
-            Color.blue.edgesIgnoringSafeArea(.all)
+            LinearGradient(gradient: Gradient(colors:
+                            [Color.black,Color.blue,Color.white]),
+                           startPoint: .topLeading, endPoint: .bottomTrailing).edgesIgnoringSafeArea(.all)
             VStack{
                 Spacer()
                 HStack{
                     Text(lastValue)
                         .bold()
                         .font(.system(size:20))
-                        .foregroundColor(.red)
+                        .foregroundColor(.white)
                     Spacer()
                     Text(value)
                         .bold()
