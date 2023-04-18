@@ -21,7 +21,7 @@ enum CalcButton : String
     case nine = "9"
     case add = "+"
     case divide = "/"
-    case mulitiple = "*"
+    case mulitiply = "*"
     case equal = "="
     case subtract = "-"
     case clear = "AC"
@@ -32,7 +32,7 @@ enum CalcButton : String
     var buttonColor:Color
     {
         switch self {
-        case .add,.subtract,.mulitiple,.divide,.equal:
+        case .add,.subtract,.mulitiply,.divide,.equal:
             return .orange
         case .negative,.clear,.percent:
             return Color(.lightGray)
@@ -43,18 +43,19 @@ enum CalcButton : String
 }
 
 enum Operation {
-    case add, subtract, multiple, divide, nonee
+    case add, subtract, multiply, divide, percent,decimal, nonee
     
 }
 
 struct ContentView: View {
-    @State var value = "0"
+    @State var value = "0.0"
+    @State var lastValue = "0.0"
     @State var currentOperation: Operation? = Operation.nonee
-    @State var runningNumber = 0
+    @State var runningNumber = 0.0
     
     let buttons : [[CalcButton]] = [
         [.clear,.negative,.percent,.divide],
-        [.seven,.eight,.nine,.mulitiple],
+        [.seven,.eight,.nine,.mulitiply],
         [.four,.five,.six,.subtract],
         [.one,.two,.three,.add],
         [.zero,.decimal,.equal]]
@@ -64,11 +65,15 @@ struct ContentView: View {
             VStack{
                 Spacer()
                 HStack{
+                    Text(lastValue)
+                        .bold()
+                        .font(.system(size:20))
+                        .foregroundColor(.red)
                     Spacer()
                     Text(value)
                         .bold()
                         .font(.system(size:50))
-                        .foregroundColor(.white)
+                        .foregroundColor(.red)
                     
                 }.padding()
                 
@@ -95,33 +100,44 @@ struct ContentView: View {
     func didTap(button:CalcButton)
     {
         switch button{
-        case .add,.subtract,.mulitiple,.divide,.equal:
+        case .add,.subtract,.mulitiply,.divide,.equal,.decimal:
             if button == .add{
                 self.currentOperation = .add
-                self.runningNumber+=Int(self.value) ?? 0
+                self.runningNumber=Double(self.value) ?? 0.0
             }
             else if button == .subtract{
                 self.currentOperation = .subtract
-                self.runningNumber+=Int(self.value) ?? 0
+                self.runningNumber=Double(self.value) ?? 0.0
             }
-            else if button == .mulitiple{
-                self.currentOperation = .multiple
-                self.runningNumber+=Int(self.value) ?? 0
+            else if button == .mulitiply{
+                self.currentOperation = .multiply
+                self.runningNumber=Double(self.value) ?? 0.0
             }
             else if button == .divide{
                 self.currentOperation = .divide
-                self.runningNumber+=Int(self.value) ?? 0
+                self.runningNumber=Double(self.value) ?? 0.0
+            }
+            if button == .decimal{
+                self.currentOperation = .decimal
+                self.runningNumber=Double(self.value) ?? 0.0
             }
             else if button == .equal{
-                let runningValue = self.runningNumber
-                let currentValue = Int(self.value) ?? 0
+                let runningValue = Double(self.runningNumber)
+                let currentValue = Double(self.value) ?? 0.0
+                self.lastValue="\(runningValue)"
                 switch self.currentOperation{
                 case .add : self.value="\(runningValue+currentValue)"
+                    self.lastValue="\(runningValue)"
                 case .subtract : self.value="\(runningValue-currentValue)"
-                case .multiple : self.value="\(runningValue*currentValue)"
+                    self.lastValue="\(runningValue)"
+                case .multiply : self.value="\(runningValue*currentValue)"
+                    self.lastValue="\(runningValue)"
+                case .decimal : self.value="\(Int(runningValue)).\(Int(currentValue))"
+                    self.lastValue="\(runningValue)"
                 case .divide :
                     if currentValue != 0 {
                         self.value="\(runningValue/currentValue)"
+                        self.lastValue="\(runningValue)"
                     }
                     else{
                         self.value="Undefined"
@@ -133,16 +149,21 @@ struct ContentView: View {
                 }
             }
             if button != .equal{
-                self.value = "0"
+                self.value = "0.0"
             }
-        
+        case .percent:
+            self.value = "\(Double(self.value)!/100.0)"
+            self.lastValue="\(Double(self.runningNumber))"
         case .clear:
-            self.value = "0"
-        case .decimal,.negative,.percent:
-            break
+            self.value = "0.0"
+            self.lastValue="\(Double(self.runningNumber))"
+        case .negative:
+            self.value = "\(Double(self.value)!*(-1))"
+            self.lastValue="\(Double(self.runningNumber))"
+        
         default:
             let number = button.rawValue
-            if self.value=="0"{
+            if self.value=="0.0"{
                 value=number
             }
             else{
